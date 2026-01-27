@@ -10,8 +10,8 @@ const useProfile = () => {
       try {
         const token = localStorage.getItem("access_token"); // adjust if needed
 
-        const res = await fetch("http://localhost:8080/auth/verify-otp", {
-          method: "GET",
+        const res = await fetch("http://localhost:8000/auth/verify-otp", {
+          method: "POST",
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,

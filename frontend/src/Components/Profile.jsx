@@ -1,18 +1,18 @@
-import useProfile from "../hooks/useProfile";
+import { useSelector } from "react-redux";
 
-function Dashboard() {
-  const { user, loading, error } = useProfile();
+function Profile() {
+  const user = useSelector((state) => state.auth.userData);
 
-  if (loading) return <p>Loading...</p>;
-  if (error) return <p>{error}</p>;
+  if (!user) return <p>Loading...</p>;
 
   return (
     <div>
-      <h2>Welcome, {user.name}</h2>
-      <p>Phone: {user.phone}</p>
-      <p>User ID: {user.id}</p>
+      <h2>Profile</h2>
+      <p><b>Name:</b> {user.name}</p>
+      <p><b>Phone:</b> {user.phone}</p>
+      <p><b>User ID:</b> {user.id}</p>
     </div>
   );
 }
 
-export default Dashboard;
+export default Profile;
