@@ -1,6 +1,5 @@
 import { useState } from 'react'
 import './App.css'
-import LoginWithOtp from './Components/LoginO'
 import Register from './Components/Register'
 import { Outlet } from 'react-router-dom'
 

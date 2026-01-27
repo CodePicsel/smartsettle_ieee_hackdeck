@@ -74,11 +74,12 @@ function Login() {
       const data = await res.json();
 
       if (data) {
-        dispatch(authLogin({status: true}))
         if(data.user_exists) {
           sessionStorage.setItem("access_token", data.access_token);
           console.log('user Exists')
           navigate('/home')
+          console.log(data)
+          dispatch(authLogin({status: true}))
         }
         else{
           sessionStorage.setItem("temp_token", data.temp_token);

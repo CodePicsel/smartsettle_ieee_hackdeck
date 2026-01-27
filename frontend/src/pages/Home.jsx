@@ -1,10 +1,10 @@
 import React from 'react'
-import Login from '../Components/login'
+import Dashboard from '../Components/Profile'
 
 function Home() {
   return (
     <div>
-      Home
+      <Dashboard />
     </div>
   )
 }
