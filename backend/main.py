@@ -6,10 +6,13 @@ import sqlite3
 import datetime
 from typing import Optional
 
-from fastapi import FastAPI, HTTPException, Query, Header, Depends, Request
+from fastapi import FastAPI, HTTPException, Query, Header
 from pydantic import BaseModel
 from dotenv import load_dotenv
 import jwt
+
+# CORS middleware
+from fastapi.middleware.cors import CORSMiddleware
 
 # -------------------------
 # Load env
@@ -24,7 +27,8 @@ DB_PATH = os.getenv("DB_PATH", "users.db")
 OTP_TTL_SECONDS = int(os.getenv("OTP_TTL_SECONDS", "300"))
 OTP_RESEND_COOLDOWN_SECONDS = int(os.getenv("OTP_RESEND_COOLDOWN_SECONDS", "30"))
 OTP_MAX_ATTEMPTS = int(os.getenv("OTP_MAX_ATTEMPTS", "5"))
-TEMP_TOKEN_EXPIRE_MINUTES = int(os.getenv("TEMP_TOKEN_EXPIRE_MINUTES", "1000"))  # expires quickly for registration
+# TEMP token lifetime (minutes)
+TEMP_TOKEN_EXPIRE_MINUTES = int(os.getenv("TEMP_TOKEN_EXPIRE_MINUTES", "1000"))
 
 # -------------------------
 # DB init (SQLite demo)
@@ -51,6 +55,21 @@ conn.commit()
 otp_store = {}  # phone -> {otp, expires, sent_at, attempts}
 
 app = FastAPI(title="SmartSettle - OTP + Conditional Registration")
+
+# -------------------------
+# CORS setup
+# -------------------------
+# Read comma-separated origins from env or fall back to common dev origins
+cors_env = os.getenv("CORS_ALLOW_ORIGINS", "http://localhost:5173,http://127.0.0.1:5173")
+origins = [o.strip() for o in cors_env.split(",") if o.strip()]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,         # or ["*"] for quick dev (not recommended with allow_credentials=True)
+    allow_credentials=True,        # allows sending Authorization header/cookies from browser
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # -------------------------
 # Pydantic models
