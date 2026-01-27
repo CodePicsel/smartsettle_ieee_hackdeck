@@ -574,21 +574,22 @@ def verify_otp(body: VerifyOTPBody):
     otp = body.otp.strip()
 
     if not phone or not otp:
-        raise HTTPException(status_code=400, detail="phone and otp are required")
+        # keep same status code, but include ok:false in response body
+        raise HTTPException(status_code=400, detail={"ok": False, "error": "phone and otp are required"})
 
     entry = otp_store.get(phone)
     now = current_ts()
 
     if not entry or entry.get("expires", 0) < now:
         otp_store.pop(phone, None)
-        raise HTTPException(status_code=400, detail="OTP invalid or expired. Request a new OTP.")
+        raise HTTPException(status_code=400, detail={"ok": False, "error": "OTP invalid or expired. Request a new OTP."})
 
     if entry.get("otp") != otp:
         entry["attempts"] = entry.get("attempts", 0) + 1
         if entry["attempts"] >= OTP_MAX_ATTEMPTS:
             otp_store.pop(phone, None)
-            raise HTTPException(status_code=400, detail="Too many incorrect attempts. OTP invalidated.")
-        raise HTTPException(status_code=400, detail="OTP does not match.")
+            raise HTTPException(status_code=400, detail={"ok": False, "error": "Too many incorrect attempts. OTP invalidated."})
+        raise HTTPException(status_code=400, detail={"ok": False, "error": "OTP does not match."})
 
     # OTP is correct. Do NOT auto-create user now.
     cur.execute("SELECT id, phone, name FROM users WHERE phone = ?", (phone,))
@@ -601,11 +602,11 @@ def verify_otp(body: VerifyOTPBody):
         # user exists -> issue full access token
         user = {"id": row[0], "phone": row[1], "name": row[2]}
         token = create_jwt_for_user(user["id"], phone)
-        return {"user_exists": True, "access_token": token, "token_type": "bearer", "user": user}
+        return {"ok": True, "user_exists": True, "access_token": token, "token_type": "bearer", "user": user}
     else:
         # user does not exist -> issue a short-lived temp token for registration
         temp_token = create_temp_token_for_phone(phone)
-        return {"user_exists": False, "temp_token": temp_token, "phone": phone, "message": "OTP verified. Register user with /auth/register using this temp_token."}
+        return {"ok": True, "user_exists": False, "temp_token": temp_token, "phone": phone, "message": "OTP verified. Register user with /auth/register using this temp_token."}
 
 
 @app.post("/auth/register")
