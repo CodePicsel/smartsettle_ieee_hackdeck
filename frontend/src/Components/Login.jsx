@@ -2,6 +2,7 @@ import { useState } from "react";
 import facebook from '../assets/facebook.png'
 import { useDispatch } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
+import {login as authLogin} from '../app/authSlice'
 
 function Login() {
     const navigate = useNavigate()
@@ -73,12 +74,15 @@ function Login() {
       const data = await res.json();
 
       if (data) {
+        dispatch(authLogin({status: true}))
         if(data.user_exists) {
-          alert('user Exists')
-          dispatch({status: true})
+          sessionStorage.setItem("access_token", data.access_token);
+          console.log('user Exists')
+          navigate('/home')
         }
         else{
-          alert("Sent to register");
+          sessionStorage.setItem("temp_token", data.temp_token);
+          console.log("Sent to register");
           navigate('/register')
         }
         

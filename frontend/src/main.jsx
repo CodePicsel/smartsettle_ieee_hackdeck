@@ -3,9 +3,11 @@ import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from './App.jsx'
 import { Provider } from 'react-redux'
-import store from '../app/store.js'
+import store from './app/store.js'
 import { createBrowserRouter, RouterProvider } from 'react-router-dom'
 import Home from './pages/Home.jsx'
+import Registerpage from './pages/Registerpage.jsx'
+import Login from './Components/login.jsx'
 
 const router = createBrowserRouter([
   {
@@ -15,6 +17,14 @@ const router = createBrowserRouter([
       {
         path: '/',
         element: <Home />
+      },
+      {
+      path: '/register',
+      element: <Registerpage />
+      },
+      {
+      path: '/login',
+      element: <Login />
       }
     ]
   }

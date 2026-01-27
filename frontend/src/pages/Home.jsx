@@ -4,7 +4,7 @@ import Login from '../Components/login'
 function Home() {
   return (
     <div>
-      <Login />
+      Home
     </div>
   )
 }
