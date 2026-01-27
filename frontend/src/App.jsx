@@ -7,8 +7,8 @@ function App() {
 
   return (
     <div className='h-screen'>
-      {/* <Login /> */}
-      <Register />
+      <Login />
+      {/* <Register /> */}
     </div>
   )
 }
