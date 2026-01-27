@@ -1,4 +1,4 @@
-package com.example.splitexpense;
+package com.example.splitexpense.fragments;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -9,6 +9,9 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
+
+import com.example.splitexpense.R;
+import com.example.splitexpense.activities.MainActivity;
 
 public class RegisterFragment extends Fragment {
 

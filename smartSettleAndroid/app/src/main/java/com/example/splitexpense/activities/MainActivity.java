@@ -1,7 +1,10 @@
-package com.example.splitexpense;
+package com.example.splitexpense.activities;
 
 import android.os.Bundle;
 import androidx.appcompat.app.AppCompatActivity;
+
+import com.example.splitexpense.fragments.DashboardFragment;
+import com.example.splitexpense.R;
 
 public class MainActivity extends AppCompatActivity {
 
