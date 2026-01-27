@@ -1,0 +1,26 @@
+@import "tailwindcss";
+
+@font-face {
+    font-family: Mukta-sb;
+    src: url(./assets/MuktaMahee-SemiBold.ttf);
+}
+@font-face {
+    font-family: poppins-sb;
+    src: url(./assets/Poppins-SemiBold.ttf);
+}
+
+.login-card {
+    position: relative;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    box-shadow: 5px 5px black;
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+  outline: none;
+  border: none; /* optional */
+  box-shadow: none;
+}
