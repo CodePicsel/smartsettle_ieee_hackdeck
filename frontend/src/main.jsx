@@ -9,11 +9,17 @@ import Home from './pages/Home.jsx'
 import Registerpage from './pages/Registerpage.jsx'
 import Login from './Components/login.jsx'
 import AuthLayout from './Layout/authLayout.jsx'
+import CreateOffer from './Components/CreateOffer.jsx'
+import AuthLoader from './Layout/AuthLoader.jsx'
 
 const router = createBrowserRouter([
   {
     path: '/',
-    element: <App />,
+    element: (
+      <AuthLoader>
+        <App />
+      </AuthLoader>
+    ),
     children: [
       {
         path: '/',
@@ -36,6 +42,14 @@ const router = createBrowserRouter([
           <Login />
         </AuthLayout>
       )
+      },
+      {
+        path: '/offers/create',
+        element: (
+          <AuthLayout authentication={false}>
+            <CreateOffer />
+          </AuthLayout>
+        )
       }
     ]
   }

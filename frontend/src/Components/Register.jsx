@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 function CompleteProfile() {
+  const navigate = useNavigate()
   const [name, setName] = useState("");
   // const [address, setAddress] = useState("");
   const [error, setError] = useState("");
@@ -39,6 +41,7 @@ function CompleteProfile() {
         },
         body: JSON.stringify({
           name: name.trim(),
+
           // address: address.trim()
         })
       });
@@ -47,7 +50,9 @@ function CompleteProfile() {
 
       if (data) {
         if(data.user.name == name)
-        alert("Registration completed 🎉");
+        sessionStorage.setItem("access_token", tempToken)
+       console.log(data)
+          // navigate('/')
         // redirect to dashboard later
       } else {
         setError(data.message || "Registration failed");

@@ -8,6 +8,10 @@
     font-family: poppins-sb;
     src: url(./assets/Poppins-SemiBold.ttf);
 }
+@font-face {
+    font-family: poppins-lt;
+    src: url(./assets/Poppins-Light.ttf);
+}
 
 .login-card {
     position: relative;
