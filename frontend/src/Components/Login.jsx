@@ -23,7 +23,7 @@ function Login() {
 
   // Send OTP
   const sendOtp = async () => {
-    if (!/^[6-9]\d{9}$/.test(phone)) {
+    if (!/^[1-9]\d{9}$/.test(phone)) {
       setError("Enter a valid 10-digit phone number");
       return;
     }
@@ -137,25 +137,30 @@ function Login() {
             onChange={(e) =>
               setOtp(e.target.value.replace(/\D/g, "").slice(0, 6))
             }
+            className="text-[1.2rem] flex gap-1 border-2 p-2 m-2 rounded-lg w-full bg-white font-[poppins-sb]"
           />
-
-          <button onClick={verifyOtp}>Verify OTP</button>
+        <div className="flex w-full">
+          <button 
+          onClick={verifyOtp}
+          className="border-2 p-2 m-2 w-full rounded-lg border-blue-900 bg-blue-600 text-white cursor-pointer"
+          >Verify OTP</button>
 
           <button
             onClick={sendOtp}
             disabled={resendCooldown > 0}
             style={{ marginTop: "8px" }}
-            className="border-2 border-blue-900 bg-blue-600 text-white"
+            className={`border p-2 m-2 w-full  rounded-lg ${resendCooldown > 0 ? 'bg-gray-200 cursor-not-allowed' : 'bg-white cursor-pointer'}`}
           >
             {resendCooldown > 0
-              ? `Resend OTP in ${resendCooldown}s`
+              ? `Resend OTP ${resendCooldown}s`
               : "Resend OTP"}
           </button>
+        </div>
         </>
       )}
 
       {/* <Link to={'/auth/register'}>Register</Link> */}
-      <h5 className="text-[0.8rem] font-[poppins-sb] hover:underline hover:text-blue-600 cursor-pointer">register</h5>
+      {/* <h5 className="text-[0.8rem] font-[poppins-sb] hover:underline hover:text-blue-600 cursor-pointer">register</h5> */}
 
       {error && <p style={{ color: "red" }}>{error}</p>}
     </div>
