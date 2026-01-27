@@ -6,47 +6,68 @@ import sqlite3
 import datetime
 from typing import Optional
 
-from fastapi import FastAPI, HTTPException, Query, Depends, Header
+from fastapi import FastAPI, HTTPException, Query, Header, Depends, Request
 from pydantic import BaseModel
 from dotenv import load_dotenv
 import jwt
 
-# load .env
+# -------------------------
+# Load env
+# -------------------------
 load_dotenv(".env")
 
-# Config
 SECRET_KEY = os.getenv("SECRET_KEY", "dev-secret-change-me")
 ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "10080"))
+ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "10080"))  # 7 days default
 DEV_MODE = os.getenv("DEV_MODE", "true").lower() in ("1", "true", "yes")
 DB_PATH = os.getenv("DB_PATH", "users.db")
 OTP_TTL_SECONDS = int(os.getenv("OTP_TTL_SECONDS", "300"))
 OTP_RESEND_COOLDOWN_SECONDS = int(os.getenv("OTP_RESEND_COOLDOWN_SECONDS", "30"))
 OTP_MAX_ATTEMPTS = int(os.getenv("OTP_MAX_ATTEMPTS", "5"))
+TEMP_TOKEN_EXPIRE_MINUTES = int(os.getenv("TEMP_TOKEN_EXPIRE_MINUTES", "1000"))  # expires quickly for registration
 
-# Init DB (ensure schema applied)
+# -------------------------
+# DB init (SQLite demo)
+# -------------------------
 if not os.path.exists(DB_PATH):
     open(DB_PATH, "a").close()
 
 conn = sqlite3.connect(DB_PATH, check_same_thread=False)
 cur = conn.cursor()
-# Create basic schema if not present
-cur.executescript(open("schema.sql", "r").read())
+# simple schema
+cur.executescript("""
+CREATE TABLE IF NOT EXISTS users (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    phone TEXT UNIQUE NOT NULL,
+    name TEXT,
+    created_at TIMESTAMP NOT NULL
+);
+""")
 conn.commit()
 
-# In-memory OTP store for demo (use Redis in production)
+# -------------------------
+# OTP store (in-memory demo)
+# -------------------------
 otp_store = {}  # phone -> {otp, expires, sent_at, attempts}
 
-app = FastAPI(title="SmartSettle - OTP Auth Demo")
+app = FastAPI(title="SmartSettle - OTP + Conditional Registration")
 
+# -------------------------
+# Pydantic models
+# -------------------------
 class RequestOTPBody(BaseModel):
     phone: str
 
 class VerifyOTPBody(BaseModel):
     phone: str
     otp: str
-    name: Optional[str] = None
 
+class RegisterBody(BaseModel):
+    name: str
+
+# -------------------------
+# Helpers
+# -------------------------
 def current_ts() -> int:
     return int(time.time())
 
@@ -58,11 +79,38 @@ def create_jwt_for_user(user_id: int, phone: str) -> str:
     payload = {
         "sub": str(user_id),
         "phone": phone,
+        "purpose": "access",
         "exp": int(expire.timestamp())
     }
     token = jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
     return token
 
+def create_temp_token_for_phone(phone: str) -> str:
+    """
+    Short-lived token proving the phone was OTP-verified and can be used to register.
+    purpose = otp_register
+    """
+    expire = datetime.datetime.utcnow() + datetime.timedelta(minutes=TEMP_TOKEN_EXPIRE_MINUTES)
+    payload = {
+        "phone": phone,
+        "purpose": "otp_register",
+        "exp": int(expire.timestamp())
+    }
+    token = jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
+    return token
+
+def decode_jwt(token: str) -> dict:
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        return payload
+    except jwt.ExpiredSignatureError:
+        raise HTTPException(status_code=401, detail="Token expired")
+    except jwt.InvalidTokenError:
+        raise HTTPException(status_code=401, detail="Invalid token")
+
+# -------------------------
+# Auth endpoints
+# -------------------------
 @app.post("/auth/request-otp")
 def request_otp(body: RequestOTPBody):
     phone = body.phone.strip()
@@ -82,10 +130,10 @@ def request_otp(body: RequestOTPBody):
         "attempts": 0
     }
 
-    # Simulate SMS: print to server logs
+    # Simulate SMS for demo — replace with provider API for production
     print(f"[SIMULATED SMS] OTP for {phone} is {otp} (valid for {OTP_TTL_SECONDS}s)")
 
-    return {"otp_sent": True, "message": "OTP sent (simulated). Replace with SMS provider for production."}
+    return {"otp_sent": True, "message": "OTP sent (simulated). In production integrate an SMS provider."}
 
 
 @app.post("/auth/verify-otp")
@@ -110,26 +158,68 @@ def verify_otp(body: VerifyOTPBody):
             raise HTTPException(status_code=400, detail="Too many incorrect attempts. OTP invalidated.")
         raise HTTPException(status_code=400, detail="OTP does not match.")
 
-    # OTP correct: create or lookup user
+    # OTP is correct. Do NOT auto-create user now.
+    # Check if user exists:
     cur.execute("SELECT id, phone, name FROM users WHERE phone = ?", (phone,))
     row = cur.fetchone()
-    if row:
-        user = {"id": row[0], "phone": row[1], "name": row[2]}
-    else:
-        created_at = datetime.datetime.utcnow().isoformat()
-        cur.execute("INSERT INTO users (phone, name, created_at) VALUES (?, ?, ?)", (phone, body.name, created_at))
-        conn.commit()
-        user_id = cur.lastrowid
-        user = {"id": user_id, "phone": phone, "name": body.name}
 
-    token = create_jwt_for_user(user["id"], phone)
-
+    # consume OTP (single-use)
     otp_store.pop(phone, None)
 
-    return {"access_token": token, "token_type": "bearer", "user": user}
+    if row:
+        # user exists -> issue full access token
+        user = {"id": row[0], "phone": row[1], "name": row[2]}
+        token = create_jwt_for_user(user["id"], phone)
+        return {"user_exists": True, "access_token": token, "token_type": "bearer", "user": user}
+    else:
+        # user does not exist -> issue a short-lived temp token for registration
+        temp_token = create_temp_token_for_phone(phone)
+        return {"user_exists": False, "temp_token": temp_token, "phone": phone, "message": "OTP verified. Register user with /auth/register using this temp_token."}
 
 
-# DEV helper endpoints (only if DEV_MODE true)
+@app.post("/auth/register")
+def register_user(body: RegisterBody, authorization: Optional[str] = Header(None)):
+    """
+    Register a new user after OTP verification.
+    The frontend should send the temp_token as Authorization: Bearer <temp_token>
+    """
+    # Get temp token from Authorization header
+    if not authorization:
+        raise HTTPException(status_code=401, detail="Missing Authorization header with temp token")
+
+    if not authorization.lower().startswith("bearer "):
+        raise HTTPException(status_code=401, detail="Invalid Authorization header format. Use: Bearer <temp_token>")
+
+    temp_token = authorization.split(" ", 1)[1].strip()
+    payload = decode_jwt(temp_token)
+
+    # ensure purpose is correct
+    if payload.get("purpose") != "otp_register":
+        raise HTTPException(status_code=401, detail="Invalid token purpose")
+
+    phone = payload.get("phone")
+    if not phone:
+        raise HTTPException(status_code=400, detail="Temp token missing phone claim")
+
+    # Safety: check user doesn't already exist (race)
+    cur.execute("SELECT id FROM users WHERE phone = ?", (phone,))
+    if cur.fetchone():
+        raise HTTPException(status_code=400, detail="User already exists")
+
+    # create user
+    created_at = datetime.datetime.utcnow().isoformat()
+    cur.execute("INSERT INTO users (phone, name, created_at) VALUES (?, ?, ?)", (phone, body.name, created_at))
+    conn.commit()
+    user_id = cur.lastrowid
+    user = {"id": user_id, "phone": phone, "name": body.name}
+
+    # issue full access token
+    access_token = create_jwt_for_user(user_id, phone)
+    return {"access_token": access_token, "token_type": "bearer", "user": user}
+
+# -------------------------
+# Dev helper endpoints
+# -------------------------
 @app.get("/auth/debug-otp")
 def debug_otp(phone: str = Query(...)):
     if not DEV_MODE:
