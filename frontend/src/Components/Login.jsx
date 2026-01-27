@@ -35,12 +35,12 @@ function Login() {
       const res = await fetch("http://localhost:8000/auth/request-otp", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ phoneNumber: fullPhone })
+        body: JSON.stringify({ phone: fullPhone })
       });
 
       const data = await res.json();
 
-      if (data.success) {
+      if (data.otp_sent) {
         setShowOtp(true);
         startResendCooldown();
       } else {
@@ -65,17 +65,22 @@ function Login() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          phoneNumber: `+91${phone}`,
+          phone: `+91${phone}`,
           otp
         })
       });
 
       const data = await res.json();
 
-      if (data.otp_sent) {
-        alert("Login successful 🎉");
-        dispatch({status: true})
-        navigate('/register')
+      if (data) {
+        if(data.user_exists) {
+          alert('user Exists')
+          dispatch({status: true})
+        }
+        else{
+          alert("Sent to register");
+          navigate('/register')
+        }
         
       } else {
         setError("Invalid OTP");
