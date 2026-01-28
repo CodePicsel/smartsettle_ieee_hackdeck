@@ -7,7 +7,7 @@ function AvailableLenders() {
   if (error) return <p>{error}</p>;
 
     return  (
-    <div className="flex flex-col w-full overflow-y-scroll max-h-screen">
+    <div className="flex flex-col w-full">
       {offers.map((offer) => (
         <div>
              <div key={offer.offer_id} className="flex justify-between p-2 m-2  rounded-lg hover:bg-gray-100 text-black ">

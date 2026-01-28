@@ -21,6 +21,10 @@
     box-shadow: 5px 5px black;
 }
 
+input{
+    border: none;
+}
+
 input:focus,
 textarea:focus,
 select:focus {

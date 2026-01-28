@@ -8,7 +8,7 @@ const useProfile = () => {
   useEffect(() => {
     const fetchProfile = async () => {
       try {
-        const token = localStorage.getItem("access_token"); // adjust if needed
+        const token = sessionStorageStorage.getItem("access_token"); // adjust if needed
 
         const res = await fetch("http://localhost:8000/auth/verify-otp", {
           method: "POST",

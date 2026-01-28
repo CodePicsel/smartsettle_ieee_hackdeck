@@ -186,7 +186,7 @@ function Profile() {
           </div>
 
           {/* TAB CONTENT */}
-          <div className="space-y-4 flex flex-col ">
+          <div className="space-y-4  p-2 m-2 my-4 flex flex-col max-h-screen overflow-y-scroll ">
             {/* LENDED */}
             {activeTab === "lended" &&
               (userOffers.length ? (
