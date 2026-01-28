@@ -42,6 +42,7 @@ dependencies {
     implementation(libs.google.material)
     implementation(libs.retrofit)
     implementation(libs.converter.gson)
+    implementation(libs.volley)
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)
