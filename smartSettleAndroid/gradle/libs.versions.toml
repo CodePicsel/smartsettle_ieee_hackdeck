@@ -11,6 +11,7 @@ fragment = "1.8.9"
 materialVersion = "1.14.0-alpha08"
 retrofit = "3.0.0"
 converterGson = "3.0.0"
+volley = "1.2.1"
 
 [libraries]
 junit = { group = "junit", name = "junit", version.ref = "junit" }
@@ -24,6 +25,7 @@ fragment = { group = "androidx.fragment", name = "fragment", version.ref = "frag
 google-material = { group = "com.google.android.material", name = "material", version.ref = "materialVersion" }
 retrofit = { group = "com.squareup.retrofit2", name = "retrofit", version.ref = "retrofit" }
 converter-gson = { group = "com.squareup.retrofit2", name = "converter-gson", version.ref = "converterGson" }
+volley = { group = "com.android.volley", name = "volley", version.ref = "volley" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

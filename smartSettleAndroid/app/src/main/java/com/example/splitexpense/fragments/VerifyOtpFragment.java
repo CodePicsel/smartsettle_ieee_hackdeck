@@ -24,11 +24,19 @@ public class VerifyOtpFragment extends Fragment {
     EditText etOtp;
     Button btnVerifyOtp;
     String phone;
+    String tempToken;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        phone = getArguments().getString("phone");
+        Bundle args = getArguments();
+        if (args != null) {
+            phone = args.getString("phone", "");
+            tempToken = args.getString("temp_token", "");
+        } else {
+            Toast.makeText(getContext(), "Missing phone or token!", Toast.LENGTH_SHORT).show();
+            if (getActivity() != null) getActivity().finish();
+        }
     }
 
     @Override
@@ -46,7 +54,7 @@ public class VerifyOtpFragment extends Fragment {
                 etOtp.setError("Enter valid OTP");
                 return;
             }
-
+            btnVerifyOtp.setEnabled(false);
             verifyOtpWithBackend(phone, otp);
         });
 
@@ -67,32 +75,52 @@ public class VerifyOtpFragment extends Fragment {
             @Override
             public void onResponse(Call<VerifyOtpResponse> call, Response<VerifyOtpResponse> response) {
 
-                if (response.isSuccessful() && response.body() != null) {
+//                if (!response.isSuccessful()) {
+//                    btnVerifyOtp.setEnabled(true); // allow retry
+//                    Toast.makeText(getContext(), "Invalid OTP or server error", Toast.LENGTH_SHORT).show();
+//                    return;
+//                }
+//
+                VerifyOtpResponse body = response.body();
+//                if (body == null) {
+//                    Toast.makeText(getContext(), "Empty server response", Toast.LENGTH_SHORT).show();
+//                    return;
+//                }
+                String tokenFromServer = body.getAccessToken(); // token from backend
+                if (tokenFromServer == null || tokenFromServer.isEmpty()) {
+                    Toast.makeText(getContext(), "Server did not return token", Toast.LENGTH_LONG).show();
+                    return;
+                }
 
-                    VerifyOtpResponse body = response.body();
 
-                    if (body.getUser() != null && body.getUser().getName() != null) {
-                        // Existing user → go to MainActivity
-                        Intent intent = new Intent(getActivity(), MainActivity.class);
-                        startActivity(intent);
-                        getActivity().finish();
 
-                    } else {
-                        // New user → go to Register screen
-                        RegisterFragment fragment = new RegisterFragment();
-                        getParentFragmentManager().beginTransaction()
-                                .replace(R.id.auth_fragment_container, fragment)
-                                .addToBackStack(null)
-                                .commit();
-                    }
+                if (body.getUser() != null) {
+                    // Existing user → go to MainActivity
+                    requireActivity()
+                            .getSharedPreferences("app_prefs", getContext().MODE_PRIVATE)
+                            .edit()
+                            .putString("access_token", tokenFromServer)
+                            .apply();
+                    startActivity(new Intent(getActivity(), MainActivity.class));
+                    requireActivity().finish();
 
                 } else {
-                    Toast.makeText(getContext(), "Invalid OTP", Toast.LENGTH_SHORT).show();
-                }
+                    // New user → go to Register screen
+                    RegisterFragment fragment = new RegisterFragment();
+                    Bundle bundle = new Bundle();
+                    bundle.putString("temp_token", tokenFromServer);
+                    fragment.setArguments(bundle);
+                    getParentFragmentManager().beginTransaction()
+                            .replace(R.id.auth_fragment_container, fragment)
+                            .addToBackStack(null)
+                            .commit();
+                    }
             }
 
             @Override
             public void onFailure(Call<VerifyOtpResponse> call, Throwable t) {
+                btnVerifyOtp.setEnabled(true); // allow retry
+
                 Toast.makeText(getContext(), "Server error", Toast.LENGTH_SHORT).show();
             }
         });

@@ -1,114 +1,15 @@
-import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import AvailableLenders from "./AvailableOffers";
 import Modal from "./Modal";
 import CreateOffer from "./CreateOffer";
-import BorrowedList from "./BorrowedList";
 
 const BASE_URL = "http://localhost:8000";
 
 function Profile() {
+  const user = useSelector((state) => state.auth.userData);
 
-    const [showCreateOffer, setShowCreateOffer] = useState(false);
-    
-  // Redux user (supports multiple slice shapes)
-  const reduxUser = useSelector(
-    (state) => state.auth?.user || state.auth?.userData || null
-  );
+  if (!user) return <p>Loading...</p>;
 
-  const [user, setUser] = useState(reduxUser);
-  const [offers, setOffers] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-
-  // tabs: borrowed | lended | available
-  const [activeTab, setActiveTab] = useState("lended");
-
-  const token = sessionStorage.getItem("access_token");
-  const sessionPhone = sessionStorage.getItem("phone");
-
-  /* ---------------- FETCH USER (fallback) ---------------- */
-  useEffect(() => {
-    async function fetchUserFallback() {
-      if (user || !token) return;
-
-      setLoading(true);
-      try {
-        const res = await fetch(`${BASE_URL}/debug/users`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-
-        if (!res.ok) throw new Error("Failed to fetch user");
-
-        const data = await res.json();
-
-        if (Array.isArray(data)) {
-          const found =
-            data.find((u) => u.phone === sessionPhone) || data[0] || null;
-          setUser(found);
-        } else if (data.user) {
-          setUser(data.user);
-        }
-      } catch (err) {
-        setError(err.message);
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    fetchUserFallback();
-  }, [user, token, sessionPhone]);
-
-  /* ---------------- FETCH OFFERS ---------------- */
-  useEffect(() => {
-    async function fetchOffers() {
-      setLoading(true);
-      try {
-        const res = await fetch(`${BASE_URL}/offers?limit=20&offset=0`);
-        if (!res.ok) throw new Error("Failed to fetch offers");
-
-        const data = await res.json();
-        setOffers(data.offers || []);
-      } catch (err) {
-        console.warn("Offers fetch failed:", err);
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    fetchOffers();
-  }, []);
-
-  /* ---------------- USER OWNED OFFERS (LENDED) ---------------- */
-  const userOffers = offers.filter(
-    (o) =>
-      o.lender?.name === user?.name ||
-      o.lender?.phone === user?.phone ||
-      o.lender?.phone === sessionPhone
-  );
-
-  const totalLended = userOffers.reduce(
-    (sum, o) => sum + Number(o.amount_available || 0),
-    0
-  );
-
-  const totalBorrowed = 0; // placeholder until loans API
-
-  /* ---------------- STATES ---------------- */
-  if (loading && !user) {
-    return <div className="p-6 text-white">Loading profile...</div>;
-  }
-
-  if (!user) {
-    return (
-      <div className="p-6 text-white">
-        <h2 className="text-xl font-semibold">No profile found</h2>
-        <p className="text-gray-400">Please login to continue.</p>
-      </div>
-    );
-  }
-
-  /* ---------------- UI ---------------- */
   return (
     <div className="w-full text-white">
       <div className="flex">
@@ -187,7 +88,7 @@ function Profile() {
           </div>
 
           {/* TAB CONTENT */}
-          <div className="space-y-4  p-2 m-2 my-4 flex flex-col max-h-screen overflow-y-scroll ">
+          <div className="space-y-4 flex flex-col ">
             {/* LENDED */}
             {activeTab === "lended" &&
               (userOffers.length ? (
@@ -225,7 +126,7 @@ function Profile() {
             {/* BORROWED */}
             {activeTab === "borrowed" && (
               <div className="bg-white rounded-lg p-4 text-black">
-                <BorrowedList />
+                No borrowed loans yet.
               </div>
             )}
 

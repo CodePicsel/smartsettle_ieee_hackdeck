@@ -1,0 +1,88 @@
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="16dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <EditText
+            android:id="@+id/etAmountAvailable"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:minHeight="48dp"
+            android:padding="12dp"
+            android:hint="Total Amount Available"
+            android:inputType="numberDecimal" />
+
+        <EditText
+            android:id="@+id/etInterestRate"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Annual Interest Rate (%)"
+            android:minHeight="48dp"
+            android:padding="12dp"
+            android:inputType="numberDecimal" />
+
+        <EditText
+            android:id="@+id/etDurationMonths"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:minHeight="48dp"
+            android:padding="12dp"
+            android:hint="Duration (Months)"
+            android:inputType="number" />
+
+        <EditText
+            android:id="@+id/etInstallments"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:minHeight="48dp"
+            android:padding="12dp"
+            android:hint="Number of Installments"
+            android:inputType="number" />
+
+        <Spinner
+            android:id="@+id/spinnerPeriodicity"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:minHeight="48dp"
+            android:padding="12dp"/>
+
+        <EditText
+            android:id="@+id/etMinBorrow"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Minimum Borrow Amount"
+            android:minHeight="48dp"
+            android:padding="12dp"
+            android:inputType="numberDecimal" />
+
+        <EditText
+            android:id="@+id/etMaxBorrow"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Maximum Borrow Amount"
+            android:minHeight="48dp"
+            android:padding="12dp"
+            android:inputType="numberDecimal" />
+
+        <EditText
+            android:id="@+id/etDescription"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Offer Description"
+            android:inputType="textMultiLine"
+            android:minLines="3" />
+
+        <Button
+            android:id="@+id/btnCreateOffer"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Create Lending Offer"
+            android:layout_marginTop="16dp" />
+
+    </LinearLayout>
+</ScrollView>

@@ -3,8 +3,8 @@ package com.example.splitexpense.activities;
 import android.os.Bundle;
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.example.splitexpense.fragments.DashboardFragment;
 import com.example.splitexpense.R;
+import com.example.splitexpense.fragments.ActionSelectionFragment;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -15,7 +15,7 @@ public class MainActivity extends AppCompatActivity {
 
         if(savedInstanceState == null){
             getSupportFragmentManager().beginTransaction()
-                    .replace(R.id.main_fragment_container, new DashboardFragment())
+                    .replace(R.id.main_fragment_container, new ActionSelectionFragment())
                     .commit();
         }
     }
