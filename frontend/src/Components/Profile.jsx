@@ -3,6 +3,7 @@ import { useSelector } from "react-redux";
 import AvailableLenders from "./AvailableOffers";
 import Modal from "./Modal";
 import CreateOffer from "./CreateOffer";
+import BorrowedList from "./BorrowedList";
 
 const BASE_URL = "http://localhost:8000";
 
@@ -224,7 +225,7 @@ function Profile() {
             {/* BORROWED */}
             {activeTab === "borrowed" && (
               <div className="bg-white rounded-lg p-4 text-black">
-                No borrowed loans yet.
+                <BorrowedList />
               </div>
             )}
 

@@ -13,6 +13,11 @@
     src: url(./assets/Poppins-Light.ttf);
 }
 
+:root {
+    background-color: rgb(39, 39, 39);
+}
+
+
 .login-card {
     position: relative;
     top: 50%;
@@ -29,6 +34,6 @@ input:focus,
 textarea:focus,
 select:focus {
   outline: none;
-  border: none; /* optional */
+  border: none; 
   box-shadow: none;
 }

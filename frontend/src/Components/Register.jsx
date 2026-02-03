@@ -69,15 +69,20 @@ function CompleteProfile() {
   }
 
   return (
-    <div style={{ width: "320px" }}>
-      <h2>Complete Your Profile</h2>
-
+    <div className="inset-0 h-screen ">
+    <div className=" bg-amber-50 w-fit flex flex-col top-[50%] left-[50%] translate-[-50%] gap-5 absolute p-5 rounded-lg ">
+      <h2 className="font-[poppins-sb] text-3xl">Complete Your Profile</h2>
+      <div className="">
+      <lable className='pl-5 font-thin'>Enter your Username</lable>
       <input
         type="text"
         placeholder="Full Name"
         value={name}
         onChange={(e) => setName(e.target.value)}
-      />
+        className="block  bg-white w-[90%] place-self-center-safe overflow-auto rounded-lg p-2 m-2"
+        onKeyDown={(e) => e.key == "Enter"? submitProfile():''}
+        />
+      </div>
 
       {/* <textarea
         placeholder="Full Address"
@@ -88,9 +93,10 @@ function CompleteProfile() {
 
       {error && <p style={{ color: "red" }}>{error}</p>}
 
-      <button onClick={submitProfile} disabled={loading}>
+      <button onClick={submitProfile} disabled={loading} className="bg-blue-600 text-white font-[poppins-sb] m-2 p-2 rounded-lg border border-blue-900 ">
         {loading ? "Submitting..." : "Complete Registration"}
       </button>
+    </div>
     </div>
   );
 }

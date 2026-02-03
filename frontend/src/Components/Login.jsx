@@ -1,5 +1,5 @@
-import { useState } from "react";
-import facebook from '../assets/facebook.png'
+import { useEffect, useState } from "react";
+import logo from '../assets/logo.png'
 import { useDispatch } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
 import {login as authLogin} from '../app/authSlice'
@@ -13,7 +13,7 @@ function Login() {
     const [error, setError] = useState("");
     const [loading, setLoading] = useState(false);
     const [resendCooldown, setResendCooldown] = useState(0);
-
+    
   // Phone input handler
   const handlePhoneChange = (e) => {
     const value = e.target.value.replace(/\D/g, "");
@@ -121,26 +121,35 @@ function Login() {
     }, 1000);
   };
 
+  const onkeydown = (fn) => (e) => {
+    if(e.key === "Enter"){
+      fn(e)
+    }
+  }
+
   return (
     <div className="login-card flex flex-col rounded-lg p-4 items-center border-2 w-80 text-center bg-gray-100 shadow-red-900 ">
-      <div className="p-2 m-2">
-        <img src={facebook} className="w-[4rem]" />
+      <div className="img-cont">
+        <img src={logo} className="w-full" />
       </div>
+      <hr className="login-hr mt-2 rounded-full border-black w-full" />
       {/* PHONE INPUT */}
-      <div className="text-[1.2rem] flex gap-1 border-2 p-2 m-2 rounded-lg w-full bg-white font-[poppins-sb]" >
+      <div className="text-[1.2rem] flex gap-1 border  p-2 m-2 rounded-lg w-full bg-blue-200 font-[poppins-lt]" >
         <span>+91 </span>
         <input
+          id="phone"
           type="tel"
           value={phone}
           onChange={handlePhoneChange}
           placeholder="9876543210"
           disabled={showOtp}
+          onKeyDown={onkeydown(sendOtp)}
         />
       </div>
 
       {!showOtp && (
         <button onClick={sendOtp} disabled={loading} className="border-2 border-blue-900 bg-blue-600 rounded-lg text-white font-[poppins-sb] p-2 m-2 w-full">
-          {loading ? "Sending..." : "Send Otp"}
+          {loading ? "Sending..." : "Send OTP"}
         </button>
       )}
 
@@ -148,25 +157,27 @@ function Login() {
       {showOtp && (
         <>
           <input
+            id="otp"
             type="text"
             placeholder="Enter OTP"
             value={otp}
             onChange={(e) =>
               setOtp(e.target.value.replace(/\D/g, "").slice(0, 6))
             }
-            className="text-[1.2rem] flex gap-1 border-2 p-2 m-2 rounded-lg w-full bg-white font-[poppins-sb]"
+            onKeyDown={onkeydown(verifyOtp)}
+            className="text-[1.2rem] flex gap-1 border  p-2 m-2 rounded-lg w-full bg-blue-200 outline font-[poppins-lt]"
           />
         <div className="flex w-full">
           <button 
           onClick={verifyOtp}
-          className="border-2 p-2 m-2 w-full rounded-lg border-blue-900 bg-blue-600 text-white cursor-pointer"
+          className="border-2 p-2 m-2 w-full font-[poppins-sb] rounded-lg border-blue-900 bg-blue-600 text-white cursor-pointer"
           >Verify OTP</button>
 
           <button
             onClick={sendOtp}
             disabled={resendCooldown > 0}
             style={{ marginTop: "8px" }}
-            className={`border p-2 m-2 w-full  rounded-lg ${resendCooldown > 0 ? 'bg-gray-200 cursor-not-allowed' : 'bg-white cursor-pointer'}`}
+            className={`border p-2 m-2 w-full font-[poppins-sb]  rounded-lg ${resendCooldown > 0 ? 'bg-gray-200 cursor-not-allowed' : 'bg-white cursor-pointer'}`}
           >
             {resendCooldown > 0
               ? `Resend OTP ${resendCooldown}s`
