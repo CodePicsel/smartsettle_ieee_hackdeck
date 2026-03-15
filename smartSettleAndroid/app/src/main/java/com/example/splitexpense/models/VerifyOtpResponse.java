@@ -32,7 +32,7 @@ public class VerifyOtpResponse {
     // Inner User class
     public static class User {
 
-        @SerializedName("user_id")
+        @SerializedName("id")
         private int userId;
 
         @SerializedName("phone")

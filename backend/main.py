@@ -643,6 +643,7 @@ def register_user(body: RegisterBody, authorization: Optional[str] = Header(None
     user = {"id": user_id, "phone": phone, "name": body.name}
 
     access_token = create_jwt_for_user(user_id, phone)
+    print(access_token)
     return {"access_token": access_token, "token_type": "bearer", "user": user}
 
 # -------------------------
